@@ -10,7 +10,6 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import teammates.common.datatransfer.FeedbackSessionType;
-import teammates.common.util.Const;
 
 import com.google.appengine.api.datastore.Text;
 
@@ -67,21 +66,8 @@ public class FeedbackSession {
     @Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
     private Date resultsVisibleFromTime;
     
-    /** This is legacy data that is no longer used. <br>
-     * The value is set to Const.INT_UNINITIALIZED if it is already processed or
-     * the old value if it hasn't. <br>
-     * TODO Remove this field
-     */
     @Persistent
-    @Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
-    private int timeZone;
-    
-    /** This replaces the legacy field timeZone. <br>
-     * The value is null for legacy data. <br>
-     * TODO Rename to timeZone after removing legacy field
-     */
-    @Persistent
-    private Double timeZoneDouble;
+    private double timeZone;
     
     @Persistent
     @Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
@@ -94,23 +80,22 @@ public class FeedbackSession {
     private boolean sentOpenEmail;
     
     @Persistent
-    private Boolean sentClosingEmail;
+    private boolean sentClosingEmail;
     
     @Persistent
-    private Boolean sentClosedEmail;
+    private boolean sentClosedEmail;
     
     @Persistent
     private boolean sentPublishedEmail;
 
-    //TODO change to primitive types and update getter
     @Persistent
-    private Boolean isOpeningEmailEnabled;
+    private boolean isOpeningEmailEnabled;
     
     @Persistent
-    private Boolean isClosingEmailEnabled;
+    private boolean isClosingEmailEnabled;
     
     @Persistent
-    private Boolean isPublishedEmailEnabled;
+    private boolean isPublishedEmailEnabled;
     
     public FeedbackSession(String feedbackSessionName, String courseId,
             String creatorEmail, Text instructions, Date createdTime, Date startTime, Date endTime,
@@ -140,8 +125,7 @@ public class FeedbackSession {
         this.endTime = endTime;
         this.sessionVisibleFromTime = sessionVisibleFromTime;
         this.resultsVisibleFromTime = resultsVisibleFromTime;
-        this.timeZone = Const.INT_UNINITIALIZED;
-        this.timeZoneDouble = timeZone;
+        this.timeZone = timeZone;
         this.gracePeriod = gracePeriod;
         this.feedbackSessionType = feedbackSessionType;
         this.sentOpenEmail = sentOpenEmail;
@@ -228,23 +212,26 @@ public class FeedbackSession {
         this.resultsVisibleFromTime = resultsVisibleFromTime;
     }
     
-    /** This method automatically converts the legacy timeZone field to
-     * the new timeZoneDouble field and returns the value of timeZoneDouble.
+    /** 
+     * Retrieves time zone of this session.
+     * 
+     * Time zone values range from -12 to +24.
+     * 
+     * @return Time offset from UTC +/- 00:00.
      */
     public double getTimeZone() {
-        if (timeZone != Const.INT_UNINITIALIZED) {
-            timeZoneDouble = new Double(timeZone);
-            timeZone = Const.INT_UNINITIALIZED;
-        }
-        return timeZoneDouble;
+        return timeZone;
     }
     
-    /** This method automatically marks the timeZone field as legacy
-     * and store the timeZone data to the new timeZoneDouble field.
+    /**
+     * Sets time zone of this session.
+     * 
+     * Time zone values range from -12 to +24.
+     * 
+     * @param timeZone Time offset from UTC +/-00:00.
      */
     public void setTimeZone(double timeZone) {
-        this.timeZone = Const.INT_UNINITIALIZED;
-        this.timeZoneDouble = timeZone;
+        this.timeZone = timeZone;
     }
 
     public int getGracePeriod() {
@@ -272,10 +259,6 @@ public class FeedbackSession {
     }
 
     public boolean isSentClosingEmail() {
-        // Legacy data might not have this field
-        if (sentClosingEmail == null) {
-            return false;
-        }
         return sentClosedEmail;
     }
 
@@ -284,10 +267,6 @@ public class FeedbackSession {
     }
 
     public boolean isSentClosedEmail() {
-        // Legacy data might not have this field
-        if (sentClosedEmail == null) {
-            return false;
-        }
         return sentClosedEmail;
     }
 
@@ -304,12 +283,7 @@ public class FeedbackSession {
     }
     
     public boolean isOpeningEmailEnabled() {
-        // Legacy data might not have this field
-        if (isOpeningEmailEnabled == null) {
-            isOpeningEmailEnabled = true;
-        }
-        
-        return isOpeningEmailEnabled.booleanValue();
+        return isOpeningEmailEnabled;
     }
     
     public void setIsOpeningEmailEnabled(boolean isOpeningEmailEnabled) {
@@ -317,12 +291,7 @@ public class FeedbackSession {
     }
     
     public boolean isClosingEmailEnabled() {
-        // Legacy data might not have this field
-        if (isClosingEmailEnabled == null) {
-            isClosingEmailEnabled = true;
-        }
-        
-        return isClosingEmailEnabled.booleanValue();
+        return isClosingEmailEnabled;
     }
     
     public void setSendClosingEmail(boolean isClosingEmailEnabled) {
@@ -330,12 +299,7 @@ public class FeedbackSession {
     }
     
     public boolean isPublishedEmailEnabled() {
-        // Legacy data might not have this field
-        if (isPublishedEmailEnabled == null) {
-            isPublishedEmailEnabled = true;
-        }
-        
-        return isPublishedEmailEnabled.booleanValue();
+        return isPublishedEmailEnabled;
     }
     
     public void setSendPublishedEmail(boolean isPublishedEmailEnabled) {
@@ -374,5 +338,4 @@ public class FeedbackSession {
                 + ", isClosingEmailEnabled=" + isClosingEmailEnabled
                 + ", isPublishedEmailEnabled=" + isPublishedEmailEnabled + "]";
     }
-
 }
