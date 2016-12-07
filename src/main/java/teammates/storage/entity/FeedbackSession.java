@@ -259,7 +259,7 @@ public class FeedbackSession {
     }
 
     public boolean isSentClosingEmail() {
-        return sentClosedEmail;
+        return sentClosingEmail;
     }
 
     public void setSentClosingEmail(boolean sentClosingEmail) {
