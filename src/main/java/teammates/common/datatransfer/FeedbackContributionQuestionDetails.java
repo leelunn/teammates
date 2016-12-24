@@ -750,13 +750,21 @@ public class FeedbackContributionQuestionDetails extends FeedbackQuestionDetails
             errorMsg = Const.FeedbackQuestion.CONTRIB_ERROR_INVALID_FEEDBACK_PATH;
         }
         
-        // restrictions on visibility options
-        Assumption.assertTrue("Contrib Qn Invalid visibility options",
-                feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.RECEIVER)
-                == feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.RECEIVER_TEAM_MEMBERS)
-                && feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.RECEIVER_TEAM_MEMBERS)
-                == feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.OWN_TEAM_MEMBERS));
-        
+        Assumption.assertTrue("Contribution Question Visibility: Instructors and only instructors may see giver's name.",
+                feedbackQuestionAttributes.showGiverNameTo.size() == 1
+                && feedbackQuestionAttributes.showGiverNameTo.contains(FeedbackParticipantType.INSTRUCTORS));
+        Assumption.assertTrue("Contribution Question Visibility: Either students can see responses anonymously, or "
+                + "they can't see responses at all.",
+                (feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.RECEIVER)
+                == feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.OWN_TEAM_MEMBERS))
+                == (feedbackQuestionAttributes.showRecipientNameTo.contains(FeedbackParticipantType.RECEIVER)
+                == feedbackQuestionAttributes.showRecipientNameTo.contains(FeedbackParticipantType.OWN_TEAM_MEMBERS)));
+        Assumption.assertTrue("Contribution Question Visibility: Instructors must always be able to see answers, "
+                + "giver's name, and recipients name",
+                feedbackQuestionAttributes.showResponsesTo.contains(FeedbackParticipantType.INSTRUCTORS)
+                && feedbackQuestionAttributes.showRecipientNameTo.contains(FeedbackParticipantType.INSTRUCTORS)
+                && feedbackQuestionAttributes.showGiverNameTo.contains(FeedbackParticipantType.INSTRUCTORS));
+
         return errorMsg;
     }
 

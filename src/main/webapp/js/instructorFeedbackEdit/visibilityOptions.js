@@ -10,6 +10,7 @@ var ROW_INSTRUCTORS = 5;
 
 function matchVisibilityOptionToFeedbackPath(selectedFeedbackPathOption) {
     var $containingForm = $(selectedFeedbackPathOption).closest('form');
+    hideInvalidCommonVisibilityMenuOptions($containingForm);
     updateVisibilityCheckboxesDiv($containingForm);
 }
 
@@ -20,7 +21,7 @@ function toggleVisibilityEditTab(clickedButton) {
 
     // enable edit
     $containingForm.find('[id|="questionedittext"]').click();
-
+    
     if ($editTab.is(':hidden')) {
         $editTab.show();
         $visibilityMessageDiv.hide();
@@ -61,7 +62,7 @@ function attachVisibilityDropdownEvent() {
         var $clickedElem = $(this);
         var selectedOption = $clickedElem.data('optionName');
         var $containingForm = $clickedElem.closest('form');
-
+        
         checkAndMarkDestructiveChange($clickedElem.text(), $containingForm);
         setVisibilityDropdownMenuText($clickedElem.text(), $containingForm);
 
@@ -73,7 +74,7 @@ function attachVisibilityDropdownEvent() {
             // only uncheck all checkboxes and update accordingly if a common option is selected
             uncheckAllVisibilityOptionCheckboxes($containingForm);
             checkCorrespondingCheckboxes(selectedOption, $containingForm);
-            $editTab.hide();
+            // $editTab.hide();
         }
 
         updateVisibilityMessageDiv($containingForm);
@@ -136,6 +137,25 @@ function uncheckAllVisibilityOptionCheckboxes($containingForm) {
 }
 
 /**
+ * Hides common visibility options based on question type
+ * 
+ * @param $containingForm Form containing question
+ */
+function hideInvalidCommonVisibilityMenuOptions($containingForm) {
+    var questionType = $containingForm.find('input[name="questiontype"]').val();
+    
+    switch (questionType) {
+    case 'CONTRIB':
+        $containingForm.find('a[data-option-name="ANONYMOUS_TO_RECIPIENT_AND_INSTRUCTORS"]').hide();
+        $containingForm.find('a[data-option-name="VISIBLE_TO_RECIPIENT_AND_INSTRUCTORS"]').hide();
+        $containingForm.find('a[data-option-name="OTHER"]').hide();
+        break;
+    default: // all other question types have no unique visibility restrictions
+        break;
+    }
+}
+
+/**
  * Checks the visibility checkboxes according to the common visibility option as selected using the dropdown menu
  */
 function checkCorrespondingCheckboxes(selectedOption, $containingForm) {
@@ -154,6 +174,11 @@ function checkCorrespondingCheckboxes(selectedOption, $containingForm) {
         // recipient can see answer and recipient, but not giver name
         allowRecipientToSee('.answerCheckbox', $containingForm);
         allowRecipientToSee('.recipientCheckbox', $containingForm);
+        
+        if ($('#questionTable-' + getQuestionNum($containingForm)).parent().find('input[name="questiontype"]').val() == 'CONTRIB') {
+            allowTeamMembersToSee('.answerCheckbox', $containingForm);
+            allowTeamMembersToSee('.recipientCheckbox', $containingForm);
+        }          
 
         // instructor can see answer, recipient AND giver name
         allowInstructorToSee('.answerCheckbox', $containingForm);
@@ -177,6 +202,14 @@ function checkCorrespondingCheckboxes(selectedOption, $containingForm) {
     default:
         throw new Error('Unexpected common visibility option type');
     }
+}
+
+/**
+ * Checks the checkboxes for giver team members 
+ * @param checkboxClass - the CSS class of the checkbox to be checked
+ */
+function allowTeamMembersToSee(checkboxClass, $containingForm) {
+    $containingForm.find('input[type="checkbox"][value="OWN_TEAM_MEMBERS"]' + checkboxClass).prop('checked', true);
 }
 
 /**
